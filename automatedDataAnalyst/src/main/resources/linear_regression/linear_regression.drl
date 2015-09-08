@@ -1,0 +1,132 @@
+//created on: Apr 4, 2015
+package analysis
+import com.datautils.*;
+import com.factengine.*;
+import com.factengine.results.*;
+import com.analyst.*;
+import com.dataframe.*;
+import com.analysisInterface.providers.*;
+import com.analysisInterface.providers.supervised.*;
+import com.analysisInterface.results.*;
+import java.util.*;
+import com.factengine.results.ResultTags;
+import com.datautils.*;
+
+//list any import classes here.
+
+
+
+//declare any global variables here
+
+
+rule "When not normal, then make response normal"
+salience 1000
+    when
+    	$response : Response()
+        $list : Results()
+        $df : DataFrame()
+        eval(!DataUtils.checkNormal($df,$response.getResponse()))
+        $lr : ILinearRegression(modelExists==false);	
+    then
+        $data: $df.getColumn($response.getResponse());    
+        //dataUtils should return a result statement here
+        
+		$list.add(new ResultStatement("Response was converted to normal",ResultTags.TRANSFORMATION));
+end
+
+
+rule "Run the model"
+salience 500
+    when
+        $response : Response()
+        $list : Results()
+        $df : DataFrame()
+        $lr : ILinearRegression(modelExists()==false);	
+    then 
+    	$lr.fit($response,$df);
+    	//we should add a new rule with any error messages (e.g. about convergence) at some point.
+		$list.add(new ResultStatement("Linear regression was executed successfuly",ResultTags.FIT));
+		update($lr);
+end
+
+rule "Insert the coefficients"
+salience 400	
+	when
+		$lr : ILinearRegression(modelExists==true);
+	then
+		insert($lr.getCoefficients());
+end
+
+
+rule "Interpret the coefficients"
+salience 300
+
+	when
+		$coefs: Coefficients()
+		$list : Results()
+	then
+		HashMap<String,Double> coefs=$coefs.getCoefficients();
+		HashMap<String,Double> pvalues=$coefs.getPValues();
+		
+		for (Map.Entry<String, Double> entry : pvalues.entrySet()) {
+    		String key = entry.getKey();
+    		Double value = entry.getValue();
+    		if(value<0.05){
+    			ResultStatement result=new ResultStatement("The coefficient for "+key+" is significant at the 0.05 level. The coefficient is "+coefs.get(key).toString(),ResultTags.COEFFICIENT);
+				$list.add(result);
+    		}
+    	}
+end
+
+
+rule "Find the most important variable"
+salience 250 
+	when
+		$coefs: Coefficients()
+		$list : Results()
+	then
+		HashMap<String,Double> c =$coefs.getCoefficients();
+		Map.Entry<String, Double> maxEntry = null;
+		
+		for (Map.Entry<String, Double> entry : c.entrySet()) { 
+    		
+    		//need to account at some point for equal coefs
+    		if (maxEntry == null || Math.abs(entry.getValue())>Math.abs(maxEntry.getValue()))
+		    {
+		    //do not include the intercept in the max calculations
+		    	if(!entry.getKey().toString().toLowerCase().contains("intercept")){
+		        maxEntry = entry;
+		        }
+		    }
+    	}
+    	
+    	String key = maxEntry.getKey();
+    	Double value = maxEntry.getValue();
+    				
+		ResultStatement result=new ResultStatement("The most important coefficient is for "+maxEntry.getKey()+" with a value of "+maxEntry.getValue().toString(),ResultTags.COEFFICIENT);
+		$list.add(result);				
+end
+
+rule "State the R squared of the model"
+salience 200 
+	when
+		$lr : ILinearRegression(modelExists==true);
+		$list : Results()
+	then			
+		ResultStatement result=new ResultStatement("The model explains approximately "+Math.round($lr.rSquared()*100) +"% of the variance.",ResultTags.METRIC);
+		$list.add(result);
+				
+end
+
+rule "Check the global assumptions of the model"
+salience 150
+	when
+		$response : Response()
+        $df : DataFrame()
+        $lr: ILinearRegression()
+		eval($lr.checkGlobalAssumptions($df,$response,0.05))
+		$list : Results()
+	then
+		ResultStatement result=new ResultStatement("The global model assumptions are satisfied.",ResultTags.ASSUMPTIONS);
+		$list.add(result);
+end

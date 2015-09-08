@@ -1,0 +1,138 @@
+package analyst;
+ 
+import java.util.ArrayList;
+import com.dataframe.DataFrame;
+import com.dataframe.DataFrameIndexException;
+import com.dataframe.DataFrame.*;
+import com.factengine.*;
+import com.factengine.commanders.*;
+import com.factengine.results.*;
+import com.factengine.analysisdescriptors.*;
+import com.factengine.factmodels.*;
+import com.factengine.datasetdescriptors.*;
+import com.datautils.*;
+import com.analysisInterface.results.*;
+import com.factengine.performancedescriptors.*;
+ 
+
+rule "choose columns to remove because of missing values"
+salience 1000
+	when
+		$col: FactColumn()
+		$df: DataFrame()
+		$colCommander: ColumnRemovalCommander()
+		eval($df.getNumMissingValuesForColumn($col.getColumn())/$df.getNumberRows()>0.1)
+		$list : Results()
+	then
+		$colCommander.addColumn($col.getColumn());
+		$list.add(new ResultStatement("Removing column "+$col.getColumn()+"because of large percentage of missing values.",ResultTags.DATA_CLEANING));	    		
+end
+
+rule "detect low variance columns"
+salience 950
+	when	
+		$col: FactColumn()
+		$df: DataFrame()
+		$colCommander: ColumnRemovalCommander()
+		eval($df.getVariance($col.getColumn())<0.1)
+		$list : Results()
+	then
+	  	$colCommander.addColumn($col.getColumn());
+		$list.add(new ResultStatement("Removing column "+$col.getColumn()+"because of small variance",ResultTags.DATA_CLEANING));	    		
+end
+
+
+rule "removal of columns"
+salience 900
+	no-loop
+	when
+		$df: DataFrame()
+		$colCommander: ColumnRemovalCommander()
+	then
+		$colCommander.removeColumns($df);
+end
+
+
+
+rule "choose rows to be removed"
+salience 800
+	when	
+		$row : FactRow()
+		$df: DataFrame()
+		eval($df.getNumMissingValuesForRow($row.getRow())>1)
+		$rowRemovalCommander : RowRemovalCommander()
+		$list: Results()
+	then
+	    $rowRemovalCommander.addRow($row.getRow());
+	   	$list.add(new ResultStatement("Removing row"+$row.getRow()+"because of large percentage of missing values.",ResultTags.DATA_CLEANING));	    			      	
+end 
+
+
+
+rule "removal of rows"
+salience 700
+	no-loop
+	when	
+		$df: DataFrame()
+		$rowRemovalCommander : RowRemovalCommander()
+	then
+	    $rowRemovalCommander.removeRows($df);	
+end
+
+
+rule "choose columns to be imputed"
+salience 600
+	when	 
+		$col : FactColumn()
+		$df: DataFrame()
+		eval($df.getNumMissingValuesForColumn($col.getColumn())>0)
+		eval($df.getNumMissingValuesForColumn($col.getColumn())<2)
+		$impCommander : ImputationCommander()
+		$list : Results()
+	then
+	    $impCommander.addRow($col.getColumn());
+	   	$list.add(new ResultStatement("Imputing row "+$col.getColumn()+" because the number of missing values was within the prespecified range.",ResultTags.DATA_CLEANING));	    
+end
+
+
+rule "impute columns"
+salience 500
+	no-loop
+	when
+		$df: DataFrame()
+		$impCommander : ImputationCommander()
+	then
+		$impCommander.impute($df);
+end
+
+
+rule "clean up names"
+salience 400
+	no-loop
+	when	
+		
+	then
+	  	
+end
+
+
+rule "detect outliers"
+salience 300
+	no-loop
+	when	
+	
+	then
+	  	
+end
+
+
+
+rule "remove outliers"
+salience 200
+	no-loop
+	when	
+	
+	then
+	  	
+end
+
