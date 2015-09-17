@@ -13,7 +13,8 @@ public class SVMFactModel extends FactModel {
 	
 	public SVMFactModel() {
 		
-		super(Algorithms.SVM,new ModelProperties[]{ModelProperties.KERNEL_METHOD,
+		super(Algorithms.SVM,new ModelProperties[]{
+				ModelProperties.KERNEL_METHOD,
 				//<REFERENCE>
 				ModelProperties.POOR_SCALABILITY,
 				ModelProperties.POOR_MISSING_VALUES,

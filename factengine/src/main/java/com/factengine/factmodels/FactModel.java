@@ -23,7 +23,7 @@ import com.factengine.descriptionenums.ModelProperties;
  */
 public class FactModel extends Fact {
 	
-	private Algorithms modelName;
+	protected Algorithms modelName;
 	ModelProperties[] modelProperties;
 
 	

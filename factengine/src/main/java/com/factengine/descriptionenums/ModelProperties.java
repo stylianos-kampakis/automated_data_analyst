@@ -39,6 +39,9 @@ EXTRACTS_LINEAR_COMBINATIONS,
 
 ONLY_FOR_POSITIVE_INTEGERS,
 
-RETURNS_COEFFICIENTS
+RETURNS_COEFFICIENTS,
+
+//the model can be used as a benchmark. Relevant for linear regression, naive Bayes, etc.
+BENCHMARK
 
 }
