@@ -440,6 +440,15 @@ public class DataFrame implements Serializable, IDataFrame {
 		rebuildIndexRow();
 	}
 
+	public Column getColumnDescription(int column) throws DataFrameIndexException{
+		if (column > this.getNumberColumns() || column < 1) {
+			throw new DataFrameIndexException("Column index does not exist.");
+		}
+		else{
+			return this.Columns.get(column);
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.dataframe.IDataFrame#getColumn(int)
 	 */
@@ -561,7 +570,6 @@ public class DataFrame implements Serializable, IDataFrame {
 		}
 
 		return factors;
-
 	}
 
 	/**
@@ -994,18 +1002,18 @@ public class DataFrame implements Serializable, IDataFrame {
 				} else {
 					Columns.get(i).setType(DataPointType.STRING);
 					HashSet<String> factors = getFactors(column);
-
+					Columns.get(i).setFactors(factors);
 					/*
 					 * The code implements the following trick to check if a
 					 * column is a factorIf the number of factors returned from
-					 * the getFactors function are not lessthan the total number
+					 * the getFactors function are not less than the total number
 					 * of elements in the column, then that column cannot be
-					 * considereda factor.
+					 * considered a factor.
 					 * 
 					 * Obviously, different algorithms can actually treat this
-					 * as a factor, but it is most likelythat a field where
+					 * as a factor, but it is most likely that a field where
 					 * every value is unique comes from a dataset where that
-					 * field is usedto denote free text.
+					 * field is used to denote free text.
 					 */
 					if (factors.size() < column.size()) {
 						Columns.get(i).setSubType(DataPointSubType.FACTOR);

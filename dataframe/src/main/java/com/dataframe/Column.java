@@ -27,17 +27,19 @@ public class Column implements Serializable {
 		
 	}
 	
-public String getName(){
-	return this.name;
-}
+	public String getName(){
+		return this.name;
+	}
 	
-	public void setType(DataPointType type){
-		
+	public void setType(DataPointType type){		
 		this.type=type;
 	}
 	
-	public void setSubType(DataPointSubType subtype){
-		
+	public void setFactors(Set<String> factors){
+		this.factors=factors;
+	}
+	
+	public void setSubType(DataPointSubType subtype){	
 		this.subtype=subtype;
 	}
 	
