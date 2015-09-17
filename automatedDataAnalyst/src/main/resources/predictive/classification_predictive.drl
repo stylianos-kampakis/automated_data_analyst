@@ -1,0 +1,63 @@
+//created on: Mar 25, 2015
+package analyst
+import com.factengine.*;
+import com.factengine.factmodels.*;
+import com.factengine.results.*; 
+//list any import classes here.
+
+
+
+//declare any global variables here
+
+
+rule "Always run benchmark algorithms"
+
+    when
+        $fm: FactModel(modelProperties contains ModelProperties.BENCHMARK)
+        $list : Results()
+    then
+        $list.add(new ResultStatement("Use algorithm "+$fm.getModelName()+" because it is a good benchmark.",ResultTags.ALGORITHM_SUGGESTION));
+        insert(new RunModel($fm));
+end
+ 
+
+rule "When a model has been set to run, then find a valid parameter set for it"
+    //include attributes such as "salience" here...
+    when 
+        $run: RunModel()
+        $factparams: FactParameters()
+        eval($factparams.isModelValid($run.getModel()))
+    then
+        insert(new TestParameters($factparams));
+end
+
+rule "If lots of features, then use logistic regression with regularization"
+
+    when
+    	$list: Results()
+        $testparams:TestParameters(ParameterProperties contains ParameterSetProperties.REGULARIZER)
+        //$df description, contains many features
+    then
+		insert(new RunParameters($testparams.getParameters())); 
+		$list.add(new ResultStatement("Use parameter setting "+$testparams.getDescription()+" because it is a good benchmark.",ResultTags.PARAMETER_SUGGESTION));
+		
+end
+
+rule "If random forest worked well, and other algos did not, then proceed to feature selection"
+
+    when
+        //conditions
+    then
+        //actions
+end
+
+
+rule "If there are many outliers use RANSAC"
+
+	when
+
+	then
+
+end
+
+
