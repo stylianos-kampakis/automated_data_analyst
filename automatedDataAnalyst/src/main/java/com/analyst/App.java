@@ -3,6 +3,7 @@ package com.analyst;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.Assert;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -51,9 +52,15 @@ public class App {
 		}
     	
     	
-    	RulesDataCleaner cleaner=new RulesDataCleaner(df_missing,RulesDataCleaner.imputationOptions.MEAN);
-		cleaner.cleanData();
-		System.out.println(cleaner.getDataFrame().toString());
+    	RulesLinearRegression lr=new RulesLinearRegression(df, new RLinearRegressionProvider("C:/Program Files/R/R-3.1.2/bin/x64/"));
+		Results res=lr.analyzeData(new Response("Sepal.Length"));
+		System.out.println(res.toString());
+		ILinearRegression model=lr.returnModel();
+		Assert.assertTrue(model.getAIC()>81 && model.getAIC()<82);
+		System.out.println(model.getCoefficients().pValuesToString());
+		Assert.assertTrue(model.getCoefficients().getPValues().get("Petal.Width")>0.03);
+		
+		Results results=lr.getResults();
                 
 	}
 

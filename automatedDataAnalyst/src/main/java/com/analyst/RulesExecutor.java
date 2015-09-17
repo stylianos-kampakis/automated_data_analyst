@@ -21,15 +21,20 @@ import com.factengine.results.Results;
 
 public class RulesExecutor {
 	
-	private boolean hasExecuted=false;
+	//all the results must be saved in this object
+	public Results results;
+	
+	protected boolean hasExecuted=false;
 	
 	protected IDataFrame df;
 	protected KieServices ks;
 	protected KieContainer kContainer;
 	protected KieSession kSession;
+	protected org.kie.api.runtime.rule.FactHandle handleResults;
+
 	
 	public RulesExecutor(IDataFrame df,String packageName,String sessionName){
-		
+		this.results=new Results();
 		this.df=df;
 		
 		//code taken from http://stackoverflow.com/questions/24558451/cant-run-hello-world-on-drools-dlr-files-are-not-picked-from-classpath-by-kie
@@ -41,13 +46,13 @@ public class RulesExecutor {
 	    FileInputStream fis;
 		try {
 			fis = new FileInputStream( "src/main/resources/"+packageName+"/"+sessionName+".drl" );
-			 kfs.write( "src/main/resources/data_preparation/"+packageName+"/"+sessionName+".drl",
+			 kfs.write( "src/main/resources/"+packageName+"/"+sessionName+".drl",
 		                kieServices.getResources().newInputStreamResource( fis ) );
 
 		    KieBuilder kieBuilder = kieServices.newKieBuilder( kfs ).buildAll();
-		    org.kie.api.builder.Results results = kieBuilder.getResults();
-		    if( results.hasMessages( Message.Level.ERROR ) ){
-		        System.out.println( results.getMessages() );
+		    org.kie.api.builder.Results results_builder = kieBuilder.getResults();
+		    if( results_builder.hasMessages( Message.Level.ERROR ) ){
+		        System.out.println( results_builder.getMessages() );
 		        throw new IllegalStateException( "### errors ###" );
 		    }
 
@@ -57,6 +62,8 @@ public class RulesExecutor {
 		    KieBase kieBase = kieContainer.getKieBase();
 		    kSession = kieContainer.newKieSession();
 		    kSession.insert(df);
+			handleResults=kSession.insert(results);
+			
 		    
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block

@@ -15,6 +15,7 @@ import com.datautils.DataUtils;
 import com.datautils.imputors.KnnImputor;
 import com.datautils.imputors.MeanImputor;
 import com.datautils.imputors.MedianImputor;
+import com.factengine.Action;
 import com.factengine.Fact;
 import com.factengine.FactFactory;
 import com.factengine.commanders.ColumnRemovalCommander;
@@ -33,7 +34,7 @@ public class RulesDataCleaner extends RulesExecutor {
 	
 	public enum imputationOptions{MEAN,MEDIAN,KNN}
 	
-	public RulesDataCleaner(IDataFrame df, imputationOptions options){
+	public RulesDataCleaner(IDataFrame df, imputationOptions options, boolean act){
 	
 		
 		super(df,"data_preparation","data_cleaning");
@@ -63,13 +64,15 @@ public class RulesDataCleaner extends RulesExecutor {
 	    factFactory.factInsertor(kSession, factsRows);
 	    factFactory.factInsertor(kSession, factsColumns);
 	    
-	    
+	     
 	    kSession.insert(df);
 	    kSession.insert(imputationCommander);
 	    kSession.insert(rowRemovalCommander);
 	    kSession.insert(columnRemovalCommander);
 	    kSession.insert(new Results());
-	    
+	    if(act){
+	    	kSession.insert(new Action());
+	    }
 
 	}
 	

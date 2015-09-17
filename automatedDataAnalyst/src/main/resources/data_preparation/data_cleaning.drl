@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import com.dataframe.DataFrame;
 import com.dataframe.DataFrameIndexException;
 import com.dataframe.DataFrame.*;
+import com.dataframe.DataPointType;
 import com.factengine.*;
 import com.factengine.commanders.*;
 import com.factengine.results.*;
@@ -14,9 +15,24 @@ import com.datautils.*;
 import com.analysisInterface.results.*;
 import com.factengine.performancedescriptors.*;
  
+ 
+ 
+rule "Clean up index column. Detects a string column where all the elements are unique."
+salience 1000
+	when
+		$col: FactColumn()
+		$df: DataFrame()
+		$colCommander: ColumnRemovalCommander()
+		eval($df.getColumnType($col.getColumn())==DataPointType.STRING)
+		eval($df.getColumnDescription($col.getColumn()).getFactors().size()==$df.getNumberRows())
+		$list : Results()
+	then
+		$colCommander.addColumn($col.getColumn());
+		$list.add(new ResultStatement("Removing column "+$col.getColumn()+"because the number of factors is equal to the number of rows. This column must be an index column.",ResultTags.DATA_CLEANING));	    		
+end
 
 rule "choose columns to remove because of missing values"
-salience 1000
+salience 950
 	when
 		$col: FactColumn()
 		$df: DataFrame()
@@ -41,6 +57,23 @@ salience 950
 		$list.add(new ResultStatement("Removing column "+$col.getColumn()+"because of small variance",ResultTags.DATA_CLEANING));	    		
 end
 
+/*
+rule "Detect high correlation columns. One of them must be redundant."
+salience 930
+	when	
+		$col1: FactColumn()
+		$col2: FactColumn()
+		$df: DataFrame()
+		$list : Results()
+		$colCommander: ColumnRemovalCommander()
+		eval($col1.getColumn()!=$col2.getColumn())
+		//columns get type, both are numerical
+		eval(DataUtils.Correlation($col1.getColumn(),$col2.getColumn())>0.95)		
+	then
+	  	$colCommander.addColumn($col1.getColumn());
+		$list.add(new ResultStatement("Removing column "+$col1.getColumn()+"because of high correlation with "+$col2.getColumn(),ResultTags.DATA_CLEANING));	    		
+end
+*/
 
 rule "removal of columns"
 salience 900
@@ -48,6 +81,7 @@ salience 900
 	when
 		$df: DataFrame()
 		$colCommander: ColumnRemovalCommander()
+		exists Action()
 	then
 		$colCommander.removeColumns($df);
 end
@@ -75,6 +109,7 @@ salience 700
 	when	
 		$df: DataFrame()
 		$rowRemovalCommander : RowRemovalCommander()
+		exists Action()
 	then
 	    $rowRemovalCommander.removeRows($df);	
 end
@@ -101,6 +136,7 @@ salience 500
 	when
 		$df: DataFrame()
 		$impCommander : ImputationCommander()
+		exists Action()
 	then
 		$impCommander.impute($df);
 end

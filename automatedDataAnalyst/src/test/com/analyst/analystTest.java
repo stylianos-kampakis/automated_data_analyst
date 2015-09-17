@@ -78,7 +78,7 @@ public class analystTest  {
 
 	@Test
 	public void testDataCleaning(){
-		RulesDataCleaner cleaner=new RulesDataCleaner(df_missing,RulesDataCleaner.imputationOptions.MEAN);
+		RulesDataCleaner cleaner=new RulesDataCleaner(df_missing,RulesDataCleaner.imputationOptions.MEAN,true);
 		cleaner.cleanData();
 		System.out.println(cleaner.getDataFrame().toString());
 	}
@@ -102,4 +102,14 @@ public class analystTest  {
 
 	}
 
+	
+	@Test
+	public void testDetectIndexRule(){
+		
+	}
+	
+	@Test
+	public void testCleanHighCorrelations(){
+		
+	}
 }

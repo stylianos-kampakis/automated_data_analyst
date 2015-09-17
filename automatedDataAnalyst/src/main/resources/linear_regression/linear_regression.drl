@@ -5,9 +5,8 @@ import com.factengine.*;
 import com.factengine.results.*;
 import com.analyst.*;
 import com.dataframe.*;
-import com.analysisInterface.providers.*;
-import com.analysisInterface.providers.supervised.*;
-import com.analysisInterface.results.*;
+import com.analysis.providers.supervised.ILinearRegression;
+import com.analysis.results.*;
 import java.util.*;
 import com.factengine.results.ResultTags;
 import com.datautils.*;
@@ -43,6 +42,7 @@ salience 500
         $df : DataFrame()
         $lr : ILinearRegression(modelExists()==false);	
     then 
+    System.out.println("FIRING");
     	$lr.fit($response,$df);
     	//we should add a new rule with any error messages (e.g. about convergence) at some point.
 		$list.add(new ResultStatement("Linear regression was executed successfuly",ResultTags.FIT));

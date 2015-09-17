@@ -15,18 +15,12 @@ import com.factengine.results.ResultStatement;
 import com.factengine.results.Results;
 
 public class RulesLinearRegression extends RulesExecutorModel{
-
-	
-	private boolean hasExecuted=false;
 	
 	private org.kie.api.runtime.rule.FactHandle handleResponse;
-	private org.kie.api.runtime.rule.FactHandle handleResults;
-	private Results results=new Results();
 	
 	public RulesLinearRegression(IDataFrame df,ILinearRegression analysisExecutor) {
 		//the constructor initializes for the drools session "statistical" corresponding to the statistical.drl
 		super(df,"linear_regression","linear_regression",analysisExecutor);
-		handleResults=kSession.insert(results);
 		kSession.insert(analysisExecutor);
 
 	}
@@ -38,11 +32,10 @@ public class RulesLinearRegression extends RulesExecutorModel{
 		//kSession.retract(handleResponse);
 		//kSession.retract(handleResults);
 		
-		kSession.insert(response);
-		
+		handleResponse=kSession.insert(response);	
+		//kSession.insert(new Results());
 		kSession.fireAllRules();
 
-		//kSession.fireUntilHalt();
 		hasExecuted=true;
 		
 		return results;
